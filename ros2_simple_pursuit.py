@@ -84,20 +84,81 @@ class DistFinderNode(Node):
                 point.z = 1
                 marker_points.points.append(point)
             """
-        if math.isinf(max_x):
-            max_x = -5.0
-        # within 40 cm reverse - tolatas    
-        if max_x > -0.4:
-            max_x = 0.5
-            #print("tolatas - backward motion")            
+            if math.isinf(max_x):
+                max_x = -5.0
+            # within 40 cm reverse - tolatas    
+            if max_x > -0.4:
+                max_x = 0.5
+                #print("tolatas - backward motion")            
+            """
+            # debug
+            marker_points.header.frame_id = "laser"
+            """
+            distance = max_x
+        else: 
+            distance = 0.4
+        return distance
+        
+def getAngle(self,ranges, angles):
+    global marker_points
+    if(len(ranges) > 50):
+        left1_min_index = np.where(math.radians(-150) < angles)[0][0]
+        left1_max_index = np.where(math.radians(-120) < angles)[0][0]
+        tmp = np.arange(left1_min_index, left1_max_index, 1)
+        left_d = -10.0
+        for t in tmp:
+            point = Point()
+            point.x, point.y = self.calcPointPos(ranges[t], angles[t])
+            if not math.isinf(point.y):
+                # find max
+                if left_d < point.y:
+                    left_d = point.y
+            """
+            # debug
+            if not math.isinf(point.x):
+                point.z = 1
+                self.marker_points.points.append(point)
+            """
         """
         # debug
-        marker_points.header.frame_id = "laser"
+        self.marker_points.header.frame_id = "laser"
         """
-        distance = max_x
+
+
+        right1_min_index = np.where(math.radians(120) < angles)[0][0]
+        right1_max_index = np.where(math.radians(150) < angles)[0][0]
+        tmp = np.arange(right1_min_index, right1_max_index, 1)
+        right_d = 10.0
+        for t in tmp:
+            point = Point()
+            point.x, point.y = self.calcPointPos(ranges[t], angles[t])
+            # find min
+            if not math.isinf(point.y):
+                if point.y < right_d:
+                    right_d = point.y
+            """
+            # debug
+            if not math.isinf(point.x):
+                point.z = 1
+                self.marker_points.points.append(point)
+            """
+        """
+        # debug
+        self.marker_points.header.frame_id = "laser"
+        """
+        angle = (left_d + right_d) / 2
+        if math.isinf(right_d):
+            right_d = -99.0
+            angle = 0.0
+        if math.isinf(left_d):
+            left_d = 99.0
+            angle = 0.0
     else: 
-        distance = 0.4
-    return distance
+        angle = 0.0
+
+    return angle, left_d, right_d
+
+
 
 
     
