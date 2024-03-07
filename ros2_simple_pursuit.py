@@ -1,4 +1,4 @@
-from __future__ import print_function
+lfrom __future__ import print_function
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import LaserScan
@@ -27,9 +27,9 @@ class DistFinderNode(Node):
         self.prev_steering_err = 0.0
         self.prev_velocity = 0.0
         self.marker_points = Marker()
-        marker_points.header.frame_id = "base_link" # "laser"
+        self.marker_points.header.frame_id = "base_link" # "laser"
         self.marker_points.type = Marker.SPHERE_LIST
-        self.marker_points.action = marker_points.MODIFY
+        self.marker_points.action = self.marker_points.MODIFY
         self.marker_points.color.r = 0.0
         self.marker_points.color.g = 0.0
         self.marker_points.color.a = 1.0
