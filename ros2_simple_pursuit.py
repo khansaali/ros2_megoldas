@@ -49,8 +49,17 @@ class DistFinderNode(Node):
         self.marker_points.pose.orientation.y = 0.0
         self.marker_points.pose.orientation.z = 0.0
         self.marker_points.pose.orientation.w = 1.0
-
-
+    def callback_laser(self, data):
+        # Does a simple follow
+        error_steering, velocity = self.follow_simple(data)
+        
+        # Create a new Twist message for velocity and steering command
+        msg_cmd = Twist()
+        msg_cmd.linear.x = velocity * 0.5  # Adjusting linear velocity (scaled for testing low speed)
+        msg_cmd.angular.z = error_steering  # Setting angular velocity (steering angle)
+        
+        # Publish the Twist message to the "cmd_vel" topic
+        self.pub.publish(msg_cmd)   
 
 
 
