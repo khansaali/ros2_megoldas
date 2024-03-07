@@ -78,6 +78,26 @@ class DistFinderNode(Node):
                     # find max (flipped upside min)
                     if point.x > max_x:
                         max_x = point.x
+                          """
+            # debug
+            if not math.isinf(point.x):
+                point.z = 1
+                marker_points.points.append(point)
+            """
+        if math.isinf(max_x):
+            max_x = -5.0
+        # within 40 cm reverse - tolatas    
+        if max_x > -0.4:
+            max_x = 0.5
+            #print("tolatas - backward motion")            
+        """
+        # debug
+        marker_points.header.frame_id = "laser"
+        """
+        distance = max_x
+    else: 
+        distance = 0.4
+    return distance
 
 
     
