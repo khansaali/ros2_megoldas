@@ -58,7 +58,7 @@ class DistFinderNode(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    node = MyNode()
+    node = DistFinderNode()
     rclpy.spin(node)
     rclpy.shutdown()
 
@@ -68,9 +68,3 @@ if __name__ == '__main__':
 
 
 
-if __name__ == '__main__':
-    rclpy.init()
-    node = DistFinderNode()
-    rclpy.spin(node)
-    node.destroy_node()
-    rclpy.shutdown()
