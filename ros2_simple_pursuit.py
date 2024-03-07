@@ -158,7 +158,53 @@ def getAngle(self,ranges, angles):
 
     return angle, left_d, right_d
 
-
+    def followSimple(self,data):
+        # data: single message from topic /scan
+        # desired_trajetory: desired distance to the right wall [meters]
+        global pubst1, marker_points, prev_steering_err, prev_velocity
+        messageS1 = std_msgs.msg.String()
+        messageS1.data = "Egyszeru_pursuit"
+        angles = np.arange(data.angle_min, data.angle_max, data.angle_increment)
+        if (len(angles) - len(data.ranges) != 0):
+            rclpy.logwarn("angles and ranges lenght differ")
+    
+        target_distance = self.getDistance(data.ranges, angles)
+        target_angle, left_d, right_d = self.getAngle(data.ranges, angles)
+    
+        point = Point()
+        point.x = target_distance
+        point.y = target_angle
+        point_st = self.PointStamped()
+        point_st.point = point
+    
+        try:
+            point_base_link_frame = tf2_geometry_msgs.do_transform_point(point_st, trans)
+            point_base_link_frame.point.x *= 0.9 # reduce
+            # debug
+            marker_points.points.append(point_base_link_frame.point)
+        except:
+            None
+    
+    
+        self.marker_pub.publish(marker_points)
+    
+        messageS1.data += "\ntarget_angle: %.1f" % (target_angle)
+        messageS1.data += "\nr: %.1f l: %.1f" % (right_d, left_d) 
+        messageS1.data += "\nforward_d: %.1f" % (target_distance)
+        velocity = -1.0 * target_distance
+        try:
+            steering_err = self.calcPursuitAngle(point_base_link_frame.point.x, point_base_link_frame.point.y)
+        except:
+            steering_err = self.calcPursuitAngle(1, -1)
+            rclpy.loginfo("err")
+        messageS1.data += "\nsteer: %.1f" % (steering_err)
+        self.pubst1.publish(messageS1)
+        self.marker_points.points = []
+        steering_err = (steering_err + prev_steering_err) / 2
+        velocity = (velocity + prev_velocity) / 2
+        prev_steering_err = steering_err
+        prev_velocity = velocity
+        return steering_err, velocity
 
 
     
