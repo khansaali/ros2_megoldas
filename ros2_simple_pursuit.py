@@ -49,6 +49,17 @@ class DistFinderNode(Node):
         self.marker_points.pose.orientation.y = 0.0
         self.marker_points.pose.orientation.z = 0.0
         self.marker_points.pose.orientation.w = 1.0
+
+    # pure pursuit steering angle calc
+    def calcPursuitAngle(self,goal_x, goal_y):
+        alpha = math.atan2(goal_y, goal_x)
+        lookahead_distance = math.sqrt(pow(goal_x, 2) + pow(goal_y, 2))
+        steering_angle = math.atan2(2.0 * WHEELBASE * np.sin(alpha) / (lookahead_distance), 1)
+        return steering_angle
+
+
+
+    
     def callback_laser(self, data):
         # Does a simple follow
         error_steering, velocity = self.follow_simple(data)
