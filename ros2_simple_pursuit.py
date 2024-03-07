@@ -49,3 +49,16 @@ class DistFinderNode(Node):
         self.marker_points.pose.orientation.y = 0.0
         self.marker_points.pose.orientation.z = 0.0
         self.marker_points.pose.orientation.w = 1.0
+
+
+
+
+
+
+
+if __name__ == '__main__':
+    rclpy.init()
+    node = DistFinderNode()
+    rclpy.spin(node)
+    node.destroy_node()
+    rclpy.shutdown()
