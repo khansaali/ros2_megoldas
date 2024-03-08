@@ -207,7 +207,9 @@ def getAngle(self,ranges, angles):
         return steering_err, velocity
 
 
-    
+    def timer_callback(self):
+        # Placeholder for timer callback logic
+        self.get_logger().info("Timer callback triggered")
     def callback_laser(self, data):
         # Does a simple follow
         error_steering, velocity = self.follow_simple(data)
@@ -219,6 +221,7 @@ def getAngle(self,ranges, angles):
         
         # Publish the Twist message to the "cmd_vel" topic
         self.pub.publish(msg_cmd)   
+        self.get_logger().info("Received laser scan data")
     if __name__ == '__main__':
     first_run = True
 
