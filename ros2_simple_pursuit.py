@@ -223,35 +223,36 @@ def getAngle(self,ranges, angles):
         self.pub.publish(msg_cmd)   
         self.get_logger().info("Received laser scan data")
     if __name__ == '__main__':
-    first_run = True
+        def run_dist_finder_node():
+            first_run = True
 
 
-    rclpy.init('dist_finder')
-    node = rclpy.create_node('dist_finder_node')
-    subscription = node.create_subscription(LaserScan, 'scan', callbackLaser, 10)
-    rate = node.create_timer(2, timer_callback)  # Adjust the callback function accordingly
-    buf = tf2_ros.Buffer()
-    listener = tf2_ros.BufferClient(buf)
-
+        rclpy.init('dist_finder')
+        node = rclpy.create_node('dist_finder_node')
+        subscription = node.create_subscription(LaserScan, 'scan', callbackLaser, 10)
+        rate = node.create_timer(2, timer_callback)  # Adjust the callback function accordingly
+        buf = tf2_ros.Buffer()
+        listener = tf2_ros.BufferClient(buf)
     
-    #rclpy.init('dist_finder',anonymous = True)
-    #rclpy.create_subscription("scan",LaserScan,callbackLaser)
-    #rclpy.logging("Simple pursuit node started")
-    """
-    
-    """
-    rate = rclpy.create_timer(2) # 2hz
-    buf = tf2_ros.Buffer()
-    listener = tf2_ros.tf2_ros.BufferClient(buf)
+        
+        #rclpy.init('dist_finder',anonymous = True)
+        #rclpy.create_subscription("scan",LaserScan,callbackLaser)
+        #rclpy.logging("Simple pursuit node started")
+        """
+        
+        """
+        rate = rclpy.create_timer(2) # 2hz
+        buf = tf2_ros.Buffer()
+        listener = tf2_ros.tf2_ros.BufferClient(buf)
 
-     while rclpy.ok():
-        if first_run:
-            try:
-                trans = buf.lookup_transform("base_link", "laser", rclpy.Time())
-                node.get_logger().info("Got laser transform")
-                first_run = False
-                # node.get_logger().info(str(trans))  # Log the transformation if needed
-            except Exception as e:
+         while rclpy.ok():
+            if first_run:
+                try:
+                    trans = buf.lookup_transform("base_link", "laser", rclpy.Time())
+                    node.get_logger().info("Got laser transform")
+                    first_run = False
+                    # node.get_logger().info(str(trans))  # Log the transformation if needed
+                except Exception as e:
                 
                 trans.translation.x = 0.26
                 trans.translation.y = 0.0
@@ -260,24 +261,20 @@ def getAngle(self,ranges, angles):
                 trans.rotation.y = 0.0
                 trans.rotation.z = 0.999999682932
                 trans.rotation.w = 0.000796326710733
-                #rclpy.logging(trans)
-                #rclpy.logging("No transform to laser assuming original!")
+                
         node.get_logger().info("No transform to laser assuming original!")
 
         node.get_logger().info(f"{KOZEPISKOLA_NEVE}({KOZEPISKOLA_AZON})")
-        rclpy.spin_once(node)
+        node.destroy_node()
+        rclpy.shutdown()
+
+    run_dist_finder_node()
+       
 
 
 
 
-def main(args=None):
-    rclpy.init(args=args)
-    node = DistFinderNode()
-    rclpy.spin(node)
-    rclpy.shutdown()
 
-if __name__ == '__main__':
-    main()
 
 
 
