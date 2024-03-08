@@ -221,55 +221,48 @@ def getAngle(self,ranges, angles):
         self.pub.publish(msg_cmd)   
     if __name__ == '__main__':
     first_run = True
-    rclpy.init('dist_finder',anonymous = True)
-    rclpy.create_subscription("scan",LaserScan,callbackLaser)
-    rclpy.logging("Simple pursuit node started")
+
+
+    rclpy.init('dist_finder')
+    node = rclpy.create_node('dist_finder_node')
+    subscription = node.create_subscription(LaserScan, 'scan', callbackLaser, 10)
+    rate = node.create_timer(2, timer_callback)  # Adjust the callback function accordingly
+    buf = tf2_ros.Buffer()
+    listener = tf2_ros.BufferClient(buf)
+
+    
+    #rclpy.init('dist_finder',anonymous = True)
+    #rclpy.create_subscription("scan",LaserScan,callbackLaser)
+    #rclpy.logging("Simple pursuit node started")
     """
-    ros2 run tf tf_echo base_link laser
-    - Translation: [0.260, 0.000, 0.228]
-    - Rotation: in Quaternion [0.000, 0.000, 1.000, 0.001]
-                in RPY (radian) [0.000, -0.000, 3.140]
-                in RPY (degree) [0.000, -0.000, 179.909]
-    header:
-        frame_id: "base_link"
-    child_frame_id: "laser"
-    transform:
-        translation:
-            x: 0.26
-            y: 0.0
-            z: 0.228
-        rotation:
-            x: 0.0
-            y: 0.0
-            z: 0.999999682932
-            w: 0.000796326710733
+    
     """
     rate = rclpy.create_timer(2) # 2hz
     buf = tf2_ros.Buffer()
     listener = tf2_ros.tf2_ros.BufferClient(buf)
 
-    while not rclpy.is_shutdown():
+     while rclpy.ok():
         if first_run:
             try:
                 trans = buf.lookup_transform("base_link", "laser", rclpy.Time())
-                rclpy.logging("Got laser fransform")
+                node.get_logger().info("Got laser transform")
                 first_run = False
-                #rclpy.logging(trans)
-            except:
-                self.trans.translation.x = 0.26
-                self.trans.translation.y = 0.0
-                self.trans.translation.z = 0.228
-                self.trans.rotation.x = 0.0
-                self.trans.rotation.y = 0.0
-                self.trans.rotation.z = 0.999999682932
-                self.trans.rotation.w = 0.000796326710733
+                # node.get_logger().info(str(trans))  # Log the transformation if needed
+            except Exception as e:
+                
+                trans.translation.x = 0.26
+                trans.translation.y = 0.0
+                trans.translation.z = 0.228
+                trans.rotation.x = 0.0
+                trans.rotation.y = 0.0
+                trans.rotation.z = 0.999999682932
+                trans.rotation.w = 0.000796326710733
                 #rclpy.logging(trans)
                 #rclpy.logging("No transform to laser assuming original!")
-        self.pubst2.publish(KOZEPISKOLA_NEVE + "(" + KOZEPISKOLA_AZON + ")")
-        try:
-            rate.sleep()
-        except rclpy.exceptions.ROSInterruptException:
-            pass
+        node.get_logger().info("No transform to laser assuming original!")
+
+        node.get_logger().info(f"{KOZEPISKOLA_NEVE}({KOZEPISKOLA_AZON})")
+        rclpy.spin_once(node)
 
 
 
