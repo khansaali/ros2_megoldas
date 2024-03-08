@@ -229,11 +229,21 @@ def getAngle(self,ranges, angles):
 
         rclpy.init('dist_finder')
         node = rclpy.create_node('dist_finder_node')
+
+        
+        subscription = node.create_subscription(LaserScan, 'scan', lambda data: None, 10)  # Placeholder subscription callback
+        rate = node.create_timer(2, lambda: None)  # Placeholder timer callback
+        buf = tf2_ros.Buffer()
+        listener = tf2_ros.BufferClient(buf)
+        first_run = [True]
+        trans = Transform()
+
+        
         subscription = node.create_subscription(LaserScan, 'scan', callbackLaser, 10)
         rate = node.create_timer(2, timer_callback)  # Adjust the callback function accordingly
         buf = tf2_ros.Buffer()
         listener = tf2_ros.BufferClient(buf)
-    
+        
         
         #rclpy.init('dist_finder',anonymous = True)
         #rclpy.create_subscription("scan",LaserScan,callbackLaser)
@@ -246,6 +256,8 @@ def getAngle(self,ranges, angles):
         listener = tf2_ros.tf2_ros.BufferClient(buf)
 
          while rclpy.ok():
+            trans = callback_laser(node, buf, trans, first_run)
+            timer_callback(node, first_run, buf, trans)
             if first_run:
                 try:
                     trans = buf.lookup_transform("base_link", "laser", rclpy.Time())
