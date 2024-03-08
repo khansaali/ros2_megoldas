@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+'''
+based on 2018 Varundev Suresh Babu (University of Virginia)
+                MIT License
+'''
+
 from __future__ import print_function
 import rclpy
 from rclpy.node import Node
@@ -12,7 +18,6 @@ import tf2_ros
 import tf2_geometry_msgs
 
 
-
 KOZEPISKOLA_NEVE = "Ismeretlen kozepiskola"
 KOZEPISKOLA_AZON = "A00"
 ANGLE_RANGE = 360 # LSN10 LIDAR has 360 degrees scan
@@ -21,7 +26,6 @@ DESIRED_DISTANCE_LEFT = 0.8 # 0.55
 VELOCITY = 1.00 # meters per second
 CAR_LENGTH = 0.445 # 0.445 meters
 WHEELBASE = 0.3187; # documention based | measured: ~32 cm
-
 
 class DistFinderNode(Node):
     def __init__(self):
@@ -49,6 +53,7 @@ class DistFinderNode(Node):
         self.marker_points.pose.orientation.y = 0.0
         self.marker_points.pose.orientation.z = 0.0
         self.marker_points.pose.orientation.w = 1.0
+    
 
     # pure pursuit steering angle calc
     def calcPursuitAngle(self,goal_x, goal_y):
@@ -78,8 +83,7 @@ class DistFinderNode(Node):
                     # find max (flipped upside min)
                     if point.x > max_x:
                         max_x = point.x
-                          """
-            # debug
+                """ debug
             if not math.isinf(point.x):
                 point.z = 1
                 marker_points.points.append(point)
@@ -98,66 +102,64 @@ class DistFinderNode(Node):
         else: 
             distance = 0.4
         return distance
-        
-def getAngle(self,ranges, angles):
-    global marker_points
-    if(len(ranges) > 50):
-        left1_min_index = np.where(math.radians(-150) < angles)[0][0]
-        left1_max_index = np.where(math.radians(-120) < angles)[0][0]
-        tmp = np.arange(left1_min_index, left1_max_index, 1)
-        left_d = -10.0
-        for t in tmp:
-            point = Point()
-            point.x, point.y = self.calcPointPos(ranges[t], angles[t])
-            if not math.isinf(point.y):
-                # find max
-                if left_d < point.y:
-                    left_d = point.y
+    def getAngle(self,ranges, angles):
+        global marker_points
+        if(len(ranges) > 50):
+            left1_min_index = np.where(math.radians(-150) < angles)[0][0]
+            left1_max_index = np.where(math.radians(-120) < angles)[0][0]
+            tmp = np.arange(left1_min_index, left1_max_index, 1)
+            left_d = -10.0
+            for t in tmp:
+                point = Point()
+                point.x, point.y = self.calcPointPos(ranges[t], angles[t])
+                if not math.isinf(point.y):
+                    # find max
+                    if left_d < point.y:
+                        left_d = point.y
+                """
+                # debug
+                if not math.isinf(point.x):
+                    point.z = 1
+                    self.marker_points.points.append(point)
+                """
             """
             # debug
-            if not math.isinf(point.x):
-                point.z = 1
-                self.marker_points.points.append(point)
+            self.marker_points.header.frame_id = "laser"
             """
-        """
-        # debug
-        self.marker_points.header.frame_id = "laser"
-        """
 
 
-        right1_min_index = np.where(math.radians(120) < angles)[0][0]
-        right1_max_index = np.where(math.radians(150) < angles)[0][0]
-        tmp = np.arange(right1_min_index, right1_max_index, 1)
-        right_d = 10.0
-        for t in tmp:
-            point = Point()
-            point.x, point.y = self.calcPointPos(ranges[t], angles[t])
-            # find min
-            if not math.isinf(point.y):
-                if point.y < right_d:
-                    right_d = point.y
+            right1_min_index = np.where(math.radians(120) < angles)[0][0]
+            right1_max_index = np.where(math.radians(150) < angles)[0][0]
+            tmp = np.arange(right1_min_index, right1_max_index, 1)
+            right_d = 10.0
+            for t in tmp:
+                point = Point()
+                point.x, point.y = self.calcPointPos(ranges[t], angles[t])
+                # find min
+                if not math.isinf(point.y):
+                    if point.y < right_d:
+                        right_d = point.y
+                """
+                # debug
+                if not math.isinf(point.x):
+                    point.z = 1
+                    self.marker_points.points.append(point)
+                """
             """
             # debug
-            if not math.isinf(point.x):
-                point.z = 1
-                self.marker_points.points.append(point)
+            self.marker_points.header.frame_id = "laser"
             """
-        """
-        # debug
-        self.marker_points.header.frame_id = "laser"
-        """
-        angle = (left_d + right_d) / 2
-        if math.isinf(right_d):
-            right_d = -99.0
+            angle = (left_d + right_d) / 2
+            if math.isinf(right_d):
+                right_d = -99.0
+                angle = 0.0
+            if math.isinf(left_d):
+                left_d = 99.0
+                angle = 0.0
+        else: 
             angle = 0.0
-        if math.isinf(left_d):
-            left_d = 99.0
-            angle = 0.0
-    else: 
-        angle = 0.0
 
-    return angle, left_d, right_d
-
+        return angle, left_d, right_d
     def followSimple(self,data):
         # data: single message from topic /scan
         # desired_trajetory: desired distance to the right wall [meters]
@@ -166,7 +168,7 @@ def getAngle(self,ranges, angles):
         messageS1.data = "Egyszeru_pursuit"
         angles = np.arange(data.angle_min, data.angle_max, data.angle_increment)
         if (len(angles) - len(data.ranges) != 0):
-            rclpy.logwarn("angles and ranges lenght differ")
+            rclpy.logwarn("angles and ranges length differ")
     
         target_distance = self.getDistance(data.ranges, angles)
         target_angle, left_d, right_d = self.getAngle(data.ranges, angles)
@@ -178,7 +180,7 @@ def getAngle(self,ranges, angles):
         point_st.point = point
     
         try:
-            point_base_link_frame = tf2_geometry_msgs.do_transform_point(point_st, trans)
+            point_base_link_frame = tf2_geometry_msgs.do_transform_point(point_st, self.trans)
             point_base_link_frame.point.x *= 0.9 # reduce
             # debug
             marker_points.points.append(point_base_link_frame.point)
@@ -205,11 +207,10 @@ def getAngle(self,ranges, angles):
         prev_steering_err = steering_err
         prev_velocity = velocity
         return steering_err, velocity
-
-
     def timer_callback(self):
         # Placeholder for timer callback logic
         self.get_logger().info("Timer callback triggered")
+
     def callback_laser(self, data):
         # Does a simple follow
         error_steering, velocity = self.follow_simple(data)
@@ -222,15 +223,12 @@ def getAngle(self,ranges, angles):
         # Publish the Twist message to the "cmd_vel" topic
         self.pub.publish(msg_cmd)   
         self.get_logger().info("Received laser scan data")
-    if __name__ == '__main__':
-        def run_dist_finder_node():
-            first_run = True
+    def run_dist_finder_node(self):
+        first_run = True
 
 
         rclpy.init('dist_finder')
         node = rclpy.create_node('dist_finder_node')
-
-        
         subscription = node.create_subscription(LaserScan, 'scan', lambda data: None, 10)  # Placeholder subscription callback
         rate = node.create_timer(2, lambda: None)  # Placeholder timer callback
         buf = tf2_ros.Buffer()
@@ -238,15 +236,12 @@ def getAngle(self,ranges, angles):
         first_run = [True]
         trans = Transform()
 
+
         
-        subscription = node.create_subscription(LaserScan, 'scan', callbackLaser, 10)
-        rate = node.create_timer(2, timer_callback)  # Adjust the callback function accordingly
-        buf = tf2_ros.Buffer()
-        listener = tf2_ros.BufferClient(buf)
-        
+
         
         #rclpy.init('dist_finder',anonymous = True)
-        #rclpy.create_subscription("scan",LaserScan,callbackLaser)
+        #rclpy.create_subscription("scan",LaserScan,callback_laser)
         #rclpy.logging("Simple pursuit node started")
         """
         
@@ -255,9 +250,7 @@ def getAngle(self,ranges, angles):
         buf = tf2_ros.Buffer()
         listener = tf2_ros.tf2_ros.BufferClient(buf)
 
-         while rclpy.ok():
-            trans = callback_laser(node, buf, trans, first_run)
-            timer_callback(node, first_run, buf, trans)
+        while rclpy.ok():
             if first_run:
                 try:
                     trans = buf.lookup_transform("base_link", "laser", rclpy.Time())
@@ -265,29 +258,55 @@ def getAngle(self,ranges, angles):
                     first_run = False
                     # node.get_logger().info(str(trans))  # Log the transformation if needed
                 except Exception as e:
-                
-                trans.translation.x = 0.26
-                trans.translation.y = 0.0
-                trans.translation.z = 0.228
-                trans.rotation.x = 0.0
-                trans.rotation.y = 0.0
-                trans.rotation.z = 0.999999682932
-                trans.rotation.w = 0.000796326710733
-                
-        node.get_logger().info("No transform to laser assuming original!")
+                    
+                    trans.translation.x = 0.26
+                    trans.translation.y = 0.0
+                    trans.translation.z = 0.228
+                    trans.rotation.x = 0.0
+                    trans.rotation.y = 0.0
+                    trans.rotation.z = 0.999999682932
+                    trans.rotation.w = 0.000796326710733
+                    #rclpy.logging(trans)
+                    #rclpy.logging("No transform to laser assuming original!")
+            node.get_logger().info("No transform to laser assuming original!")
 
-        node.get_logger().info(f"{KOZEPISKOLA_NEVE}({KOZEPISKOLA_AZON})")
-        node.destroy_node()
-        rclpy.shutdown()
+            node.get_logger().info(f"{KOZEPISKOLA_NEVE}({KOZEPISKOLA_AZON})")
+          
 
-    run_dist_finder_node()
-       
+def main(args=None):
+    rclpy.init(args=args)
 
+    dist_finder = DistFinderNode()
 
-
-
-
-
-
+    rclpy.spin(dist_finder)
+    dist_finder.destroy_node()
+    rclpy.shutdown()
 
 
+if __name__ == '__main__':
+    main()
+
+
+
+
+
+
+
+
+
+        
+
+
+        
+
+
+
+
+
+
+
+
+
+
+
+    
